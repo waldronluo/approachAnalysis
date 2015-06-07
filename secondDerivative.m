@@ -2,31 +2,26 @@ function secondDerivative(dataRootPath)
 axis = ['fx'; 'fy'; 'fz'; 'mx'; 'my'; 'mz'];
 
 cases = ls (dataRootPath);
-for i = 1:size(cases, 1)
+   for i = 1:size(cases, 1)
         approachSig = load(strcat(dataRootPath, '/', cases(i, :)));
         approachSig = approachSig.approachSig;
         firstDerivative = derivative (approachSig);
         secondDerivative = derivative (firstDerivative);
-        save(strcat('derivative/', cases(i,:)), 'secondDerivative')
+%        [[1:size(secondDerivative, 1)]' , abs(secondDerivative) > (mean(secondDerivative + 1 * std(secondDerivative)))]
+        filter = abs(secondDerivative(:, 2:end)) > (mean(secondDerivative + 1 * std(secondDerivative))(:, 2:end));
+        [x, y] = find(filter);
+        begin = secondDerivative(x(1), 1);
+        approachSig((approachSig(:,1) >= begin),1);
 
-        h = figure (i);
-        cases(i, :)
-        set (h, 'name', cases(i, :))
-        for j = 1:6
-            subplot (3, 2, j)
-            plot(secondDerivative(:, 1), (secondDerivative(:, 1 + j) ./ max(secondDerivative(:, 1+j))), "-b", ...
-                 approachSig(:,1), (approachSig(:,1+j) ./ max(approachSig(:, 1+j))), "-k")
-            title (axis(j, :))
-        end
-        print (strcat('derivative/img/', cases(i, 1:(end-4)), '.jpg'), '-djpg');
-        close all
-
-    end
+   %     for j = 1:size(secondDerivative, 1)
+   %     end
+        pause
+   end
 end
 
 function derivativeMatrix = derivative(sigMatrix)
 derivativeMatrix = sigMatrix(2:end-1, 1);
-for i = 2:size(sigMatrix, 2)
+    for i = 2:size(sigMatrix, 2)
         tmpDerivative = [];
         for j = 1:size(sigMatrix, 1)
             if (j == 1)
